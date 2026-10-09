@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "UAREFAKE",
+      "hasCanvas": false,
+      "bodyTextLen": 2198,
+      "bodyTextHash": "e58071f1f1fe5c203aa798bdc49c1dd26162c702e6317791694741dc7d1ef35e",
+      "bodyTextPrefix": "U UAREFAKE .com .COM STOREFRONT AI REGISTRY .SPACE OPS MANIFESTO",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "UAREFAKE",
+      "hasCanvas": false,
+      "bodyTextLen": 2149,
+      "bodyTextHash": "02b860a8cdbec97168487055ea6e5de788ee9502f7779cc3fbecbbeb40ac8633",
+      "bodyTextPrefix": "U UAREFAKE .com UAREFAKE.COM · STOREFRONT YOU ARE FAKE UNTIL PRO",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

@@ -179,10 +179,20 @@ export const runRecoveryDrill = createServerFn({ method: "POST" }).handler(async
   const state = JSON.stringify({ status: "HEALTHY", value: 0, synthetic: true });
   const stateHash = await sha256(state);
   const now = Date.now();
-  await sql`insert into checkpoints (id, target_id, state_json, state_hash, created_at) values (${checkpointId}, ${targetId}, ${state}, ${stateHash}, ${now})`;
-  await sql`insert into failures (id, checkpoint_id, target_id, failure_code, failure_json, created_at) values (${failureId}, ${checkpointId}, ${targetId}, ${"SYNTHETIC_INVARIANT_BREACH"}, ${JSON.stringify({ recovered: true })}, ${now + 1})`;
+  const tenants = await sql<{ id: string }>`select id from tenants limit 1`;
+  const tenantId = tenants[0]?.id ?? `tenant_recovery_drill`;
+  if (!tenants[0]) {
+    await sql`insert into tenants (id, name, tier, isolated_storage_key, status, created_at, updated_at)
+      values (${tenantId}, ${"Recovery Drill Tenant"}, ${"STANDARD"}, ${"recovery-drill"}, ${"ACTIVE"}, ${now}, ${now})
+      on conflict (id) do nothing`;
+  }
+  await sql`insert into checkpoints (id, tenant_id, checkpoint_id, target_mutation, classification, snapshot_state_json, created_at, updated_at, status, payload_json)
+    values (${checkpointId}, ${tenantId}, ${checkpointId}, ${targetId}, ${"SYNTHETIC_RECOVERY_DRILL"}, ${state}, ${now}, ${now}, ${"CAPTURED"}, ${JSON.stringify({ stateHash })})`;
+  await sql`insert into failures (id, tenant_id, failure_type, severity, message, quarantined, resolved_at, created_at, updated_at, status, payload_json)
+    values (${failureId}, ${tenantId}, ${"SYNTHETIC_INVARIANT_BREACH"}, ${"LOW"}, ${"Synthetic recovery drill failure"}, ${true}, ${now + 2}, ${now + 1}, ${now + 2}, ${"RECOVERED"}, ${JSON.stringify({ checkpointId, recovered: true })})`;
   const evidenceHash = await sha256(`${checkpointId}|${failureId}|${stateHash}`);
-  await sql`insert into rollback_records (id, checkpoint_id, failure_id, target_id, status, restored_hash, evidence_hash, created_at) values (${rollbackId}, ${checkpointId}, ${failureId}, ${targetId}, ${"RESTORED"}, ${stateHash}, ${evidenceHash}, ${now + 2})`;
+  await sql`insert into rollback_records (id, tenant_id, checkpoint_id, reason, status, restored_hash, created_at, updated_at, payload_json)
+    values (${rollbackId}, ${tenantId}, ${checkpointId}, ${"SYNTHETIC_INVARIANT_BREACH"}, ${"RESTORED"}, ${stateHash}, ${now + 2}, ${now + 2}, ${JSON.stringify({ failureId, evidenceHash, targetId })})`;
   const audit = await appendAudit(sql, {
     action: "RECOVERY_DRILL_ROLLBACK", target: "synthetic_recovery_target", targetId,
     payload: JSON.stringify({ checkpointId, failureId, rollbackId, restoredHash: stateHash }),
